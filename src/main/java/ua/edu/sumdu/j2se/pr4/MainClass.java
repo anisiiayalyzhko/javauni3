@@ -5,34 +5,58 @@ import java.util.Scanner;
 public class MainClass {
     public static void main(String[] args) {
         Scanner scanner = new Scanner(System.in);
-        // Створюємо масив саме на 5 об'єктів (Варіант 2)
-        Book[] books = new Book[5];
+        // Створюємо об'єкт нашої бібліотеки
+        Library myLibrary = new Library("Моя Бібліотека");
 
-        System.out.println("Введіть дані для 5 книг:");
+        while (true) {
+            System.out.println("\n--- МЕНЮ ---");
+            System.out.println("1. Додати нову книгу");
+            System.out.println("2. Показати всі книги");
+            System.out.println("3. Вихід");
+            System.out.print("Оберіть дію: ");
 
-        for (int i = 0; i < books.length; i++) {
-            System.out.println("\nКнига №" + (i + 1));
+            String choice = scanner.nextLine();
 
-            System.out.print("Назва: ");
-            String title = scanner.nextLine();
+            if (choice.equals("1")) {
+                try {
+                    // Збираємо дані від користувача
+                    System.out.print("Назва: ");
+                    String title = scanner.nextLine();
+                    System.out.print("Автор: ");
+                    String author = scanner.nextLine();
+                    System.out.print("Рік: ");
+                    int year = Integer.parseInt(scanner.nextLine());
+                    System.out.print("Ціна: ");
+                    double price = Double.parseDouble(scanner.nextLine());
 
-            System.out.print("Автор: ");
-            String author = scanner.nextLine();
+                    // Вибір жанру через меню
+                    System.out.println("Оберіть жанр: 1-CLASSIC, 2-FANTASY, 3-HISTORY");
+                    String gChoice = scanner.nextLine();
+                    Genre genre = Genre.CLASSIC; // За замовчуванням
+                    if (gChoice.equals("2")) genre = Genre.FANTASY;
+                    if (gChoice.equals("3")) genre = Genre.HISTORY;
 
-            System.out.print("Рік видання: ");
-            // Перетворюємо рядок у число, щоб уникнути багів зі Scanner
-            int year = Integer.parseInt(scanner.nextLine());
+                    // Створюємо книгу і кладемо її в бібліотеку
+                    Book b = new Book(title, author, year, price, genre);
+                    myLibrary.addBook(b);
 
-            // Створюємо нову книгу і кладемо її в масив
-            books[i] = new Book(title, author, year);
+                    System.out.println("Книгу додано!");
+                    // Перевірка статичного лічильника
+                    System.out.println("Загалом книг у базі: " + Book.getBookCount());
+
+                } catch (Exception e) {
+                    System.out.println("Помилка при введенні: " + e.getMessage());
+                }
+
+            } else if (choice.equals("2")) {
+                // Викликаємо метод нашої бібліотеки
+                myLibrary.showLibraryInfo();
+            } else if (choice.equals("3")) {
+                System.out.println("Кінець роботи.");
+                break;
+            } else {
+                System.out.println("Немає такого пункту.");
+            }
         }
-
-        System.out.println("\nВаша бібліотека");
-        for (Book b : books) {
-            // Тут спрацює метод toString()
-            System.out.println(b);
-        }
-
-        scanner.close();
     }
 }
