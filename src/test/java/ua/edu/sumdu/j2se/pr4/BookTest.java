@@ -7,10 +7,8 @@ class BookTest {
 
     @Test
     void shouldThrowExceptionWhenPriceIsNegative() {
-        // Створюємо книгу з нормальною ціною
-        Book book = new Book("Назва", "Автор", 2024, 100.0);
-
-        // Перевіряємо, що сетер викине помилку, якщо спробувати поставити -50
+        // Додали Genre.CLASSIC п'ятим параметром
+        Book book = new Book("Назва", "Автор", 2024, 100.0, Genre.CLASSIC);
         assertThrows(IllegalArgumentException.class, () -> {
             book.setPrice(-50.0);
         });
@@ -18,9 +16,9 @@ class BookTest {
 
     @Test
     void shouldThrowExceptionWhenConstructorDataIsInvalid() {
-        // Перевіряємо, що конструктор викине помилку, якщо назва порожня
+        // Тут теж додали жанр в кінці
         assertThrows(IllegalArgumentException.class, () -> {
-            new Book("", "Автор", 2024, 100.0);
+            new Book("", "Автор", 2024, 100.0, Genre.CLASSIC);
         });
     }
 }
