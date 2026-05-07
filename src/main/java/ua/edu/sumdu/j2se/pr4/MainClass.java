@@ -24,24 +24,27 @@ public class MainClass {
 
             try {
                 if (choice.equals("1") || choice.equals("2")) {
-                    // Спільні дані для обох типів
                     System.out.print("Назва: "); String title = scanner.nextLine();
-                    System.out.print("Автор: "); String author = scanner.nextLine();
+                    System.out.print("Автор: "); String author = author = scanner.nextLine();
                     System.out.print("Рік: "); int year = Integer.parseInt(scanner.nextLine());
                     System.out.print("Ціна: "); double price = Double.parseDouble(scanner.nextLine());
+                    System.out.println("Оберіть жанр: 1-FICTION, 2-FANTASY, 3-HISTORY, 4-CLASSIC");
+                    String gChoice = scanner.nextLine();
+                    Genre genre = Genre.FICTION; // за замовчуванням
+                    if (gChoice.equals("2")) genre = Genre.FANTASY;
+                    else if (gChoice.equals("3")) genre = Genre.HISTORY;
+                    else if (gChoice.equals("4")) genre = Genre.CLASSIC;
 
                     if (choice.equals("1")) {
                         System.out.print("Розмір файлу (MB): ");
                         double size = Double.parseDouble(scanner.nextLine());
-                        // Додаємо Електронну книгу
-                        inventory.add(new EBook(title, author, year, price, Genre.FICTION, size));
+                        inventory.add(new EBook(title, author, year, price, genre, size));
                     } else {
                         System.out.print("Вага книги (г): ");
                         double weight = Double.parseDouble(scanner.nextLine());
-                        // Додаємо Паперову книгу
-                        inventory.add(new PaperBook(title, author, year, price, Genre.CLASSIC, weight));
+                        inventory.add(new PaperBook(title, author, year, price, genre, weight));
                     }
-                    System.out.println("Книгу успішно додано!");
+                    System.out.println("Книгу додано!");
 
                 } else if (choice.equals("3")) {
                     System.out.println("\nВМІСТ БІБЛІОТЕКИ");
