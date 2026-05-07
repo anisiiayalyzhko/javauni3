@@ -9,7 +9,7 @@ public class MainClass {
         Library myLibrary = new Library("Моя Бібліотека");
 
         while (true) {
-            System.out.println("\n--- МЕНЮ ---");
+            System.out.println("\nМЕНЮ");
             System.out.println("1. Додати нову книгу");
             System.out.println("2. Показати всі книги");
             System.out.println("3. Вихід");
