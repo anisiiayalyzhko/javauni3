@@ -10,119 +10,185 @@ public class MainClass {
 
     public static void main(String[] args) {
         Scanner scanner = new Scanner(System.in);
+        // Завантаження даних з файлу при старті (Лаб 9)
         List<Book> inventory = loadFromFile();
 
         while (true) {
             System.out.println("\n ГОЛОВНЕ МЕНЮ ");
-            System.out.println("1. Створити новий об’єкт");
-            System.out.println("2. Вивести всю колекцію");
-            System.out.println("3. ПОШУК ОБ'ЄКТА");
+            System.out.println("1. Пошук об'єкта");
+            System.out.println("2. Створити новий об’єкт");
+            System.out.println("3. Вивести інформацію про всі об’єкти");
             System.out.println("4. Завершити роботу");
             System.out.print("Вибір: ");
 
-            String choice = scanner.nextLine();
-            if (choice.equals("4")) {
-                saveToFile(inventory);
-                System.out.println("Дані збережено. Вихід...");
+            String mainChoice = scanner.nextLine();
+
+            if (mainChoice.equals("4")) {
+                saveToFile(inventory); // Збереження перед виходом
+                System.out.println("Дані збережено. До побачення!");
                 break;
             }
 
-            switch (choice) {
-                case "1" -> showCreateMenu(scanner, inventory);
-                case "2" -> {
-                    System.out.println("\n ВМІСТ КОЛЕКЦІЇ ");
-                    if (inventory.isEmpty()) System.out.println("Колекція порожня.");
+            switch (mainChoice) {
+                case "1" -> showSearchMenu(scanner, inventory);
+                case "2" -> showCreateMenu(scanner, inventory);
+                case "3" -> {
+                    System.out.println("\n--- ПОВНИЙ СПИСОК КНИГ ---");
+                    if (inventory.isEmpty()) System.out.println("Список порожній.");
                     for (Book b : inventory) System.out.println(b);
                 }
-                case "3" -> showSearchMenu(scanner, inventory);
-                default -> System.out.println("Некоректний вибір.");
+                default -> System.out.println("Невірний вибір. Спробуйте ще раз.");
             }
         }
     }
 
-    //  МЕТОДИ ПОШУКУ (Функціональна декомпозиція)
+    //МЕТОДИ ПОШУКУ (Лабораторна №10)
 
-    private static List<Book> findByAuthor(List<Book> inventory, String author) {
-        List<Book> result = new ArrayList<>();
-        for (Book b : inventory) {
-            if (b.getAuthor().toLowerCase().contains(author.toLowerCase())) {
-                result.add(b);
-            }
+    private static void showSearchMenu(Scanner sc, List<Book> list) {
+        if (list.isEmpty()) {
+            System.out.println("Колекція порожня. Пошук неможливий.");
+            return;
         }
-        return result;
-    }
 
-    private static List<Book> findByPriceRange(List<Book> inventory, double min, double max) {
-        List<Book> result = new ArrayList<>();
-        for (Book b : inventory) {
-            if (b.getPrice() >= min && b.getPrice() <= max) {
-                result.add(b);
-            }
-        }
-        return result;
-    }
+        System.out.println("\n--- МЕНЮ ПОШУКУ ---");
+        System.out.println("1. Пошук за автором");
+        System.out.println("2. Книги, видані після певного року");
+        System.out.println("3. Книги, дешевші за певну ціну");
+        System.out.println("0. Повернутися до головного меню");
+        System.out.print("Ваш вибір: ");
 
-    private static List<Book> findByGenre(List<Book> inventory, Genre genre) {
-        List<Book> result = new ArrayList<>();
-        for (Book b : inventory) {
-            if (b.getGenre() == genre) {
-                result.add(b);
-            }
-        }
-        return result;
-    }
-
-    //  ПІДМЕНЮ ПОШУКУ
-
-    private static void showSearchMenu(Scanner sc, List<Book> inventory) {
-        System.out.println("\n МЕНЮ ПОШУКУ");
-        System.out.println("1. За автором");
-        System.out.println("2. За діапазоном ціни");
-        System.out.println("3. За жанром");
-        System.out.println("0. Назад");
-        System.out.print("Оберіть критерій: ");
-
-        String searchChoice = sc.nextLine();
-        List<Book> found = new ArrayList<>();
+        String choice = sc.nextLine();
+        List<Book> results = new ArrayList<>();
 
         try {
-            switch (searchChoice) {
+            switch (choice) {
                 case "1" -> {
-                    System.out.print("Введіть автора (або частину імені): ");
-                    found = findByAuthor(inventory, sc.nextLine());
+                    System.out.print("Введіть ім'я автора: ");
+                    results = searchByAuthor(list, sc.nextLine());
                 }
                 case "2" -> {
-                    System.out.print("Мінімальна ціна: "); double min = Double.parseDouble(sc.nextLine());
-                    System.out.print("Максимальна ціна: "); double max = Double.parseDouble(sc.nextLine());
-                    found = findByPriceRange(inventory, min, max);
+                    System.out.print("Введіть рік: ");
+                    results = searchByYear(list, Integer.parseInt(sc.nextLine()));
                 }
                 case "3" -> {
-                    System.out.println("Жанри: 1-FICTION, 2-FANTASY, 3-HISTORY, 4-CLASSIC");
-                    String g = sc.nextLine();
-                    Genre genre = (g.equals("2")) ? Genre.FANTASY : (g.equals("3")) ? Genre.HISTORY : (g.equals("4")) ? Genre.CLASSIC : Genre.FICTION;
-                    found = findByGenre(inventory, genre);
+                    System.out.print("Введіть максимальну ціну: ");
+                    results = searchByPrice(list, Double.parseDouble(sc.nextLine()));
                 }
                 case "0" -> { return; }
-                default -> { System.out.println("Невірний критерій."); return; }
-            }
-
-            if (found.isEmpty()) {
-                System.out.println("Нічого не знайдено за вашим запитом.");
-            } else {
-                System.out.println("\nЗнайдені об'єкти:");
-                for (Book b : found) System.out.println(b);
+                default -> {
+                    System.out.println("Невірний вибір.");
+                    return;
+                }
             }
         } catch (Exception e) {
-            System.out.println("Помилка при пошуку. Перевірте формат даних.");
+            System.out.println("Помилка введення даних для пошуку.");
+            return;
+        }
+
+        if (results.isEmpty()) {
+            System.out.println("За вашим запитом нічого не знайдено.");
+        } else {
+            System.out.println("\n--- РЕЗУЛЬТАТИ ПОШУКУ ---");
+            for (Book b : results) System.out.println(b);
         }
     }
 
-    // СТВОРЕННЯ ОБ'ЄКТА Лаб 8-9
+    private static List<Book> searchByAuthor(List<Book> list, String author) {
+        List<Book> found = new ArrayList<>();
+        for (Book b : list) {
+            if (b.getAuthor().equalsIgnoreCase(author.trim())) {
+                found.add(b);
+            }
+        }
+        return found;
+    }
+
+    private static List<Book> searchByYear(List<Book> list, int year) {
+        List<Book> found = new ArrayList<>();
+        for (Book b : list) {
+            if (b.getYear() >= year) {
+                found.add(b);
+            }
+        }
+        return found;
+    }
+
+    private static List<Book> searchByPrice(List<Book> list, double maxPrice) {
+        List<Book> found = new ArrayList<>();
+        for (Book b : list) {
+            if (b.getPrice() <= maxPrice) {
+                found.add(b);
+            }
+        }
+        return found;
+    }
+
+    // МЕТОДИ РОБОТИ З ФАЙЛАМИ (Лабораторна №9)
+
+    private static void saveToFile(List<Book> list) {
+        try (PrintWriter writer = new PrintWriter(new FileWriter(FILE_NAME))) {
+            for (Book b : list) {
+                String type = b.getClass().getSimpleName();
+                StringBuilder sb = new StringBuilder();
+                sb.append(type).append(";")
+                        .append(b.getTitle()).append(";")
+                        .append(b.getAuthor()).append(";")
+                        .append(b.getYear()).append(";")
+                        .append(b.getPrice()).append(";")
+                        .append(b.getGenre());
+
+                if (b instanceof EBook) sb.append(";").append(((EBook) b).getFileSize());
+                else if (b instanceof AudioBook) sb.append(";").append(((AudioBook) b).getDuration());
+                else if (b instanceof RareBook) {
+                    sb.append(";").append(((RareBook) b).getWeight());
+                    sb.append(";").append(((RareBook) b).getCondition());
+                } else if (b instanceof PaperBook) sb.append(";").append(((PaperBook) b).getWeight());
+
+                writer.println(sb.toString());
+            }
+        } catch (IOException e) {
+            System.out.println("Помилка збереження: " + e.getMessage());
+        }
+    }
+
+    private static List<Book> loadFromFile() {
+        List<Book> list = new ArrayList<>();
+        File file = new File(FILE_NAME);
+        if (!file.exists()) return list;
+
+        try (BufferedReader reader = new BufferedReader(new FileReader(file))) {
+            String line;
+            while ((line = reader.readLine()) != null) {
+                String[] parts = line.split(";");
+                if (parts.length < 6) continue;
+
+                String type = parts[0];
+                String title = parts[1];
+                String author = parts[2];
+                int year = Integer.parseInt(parts[3]);
+                double price = Double.parseDouble(parts[4]);
+                Genre genre = Genre.valueOf(parts[5]);
+
+                switch (type) {
+                    case "Book" -> list.add(new Book(title, author, year, price, genre));
+                    case "EBook" -> list.add(new EBook(title, author, year, price, genre, Double.parseDouble(parts[6])));
+                    case "AudioBook" -> list.add(new AudioBook(title, author, year, price, genre, Integer.parseInt(parts[6])));
+                    case "PaperBook" -> list.add(new PaperBook(title, author, year, price, genre, Double.parseDouble(parts[6])));
+                    case "RareBook" -> list.add(new RareBook(title, author, year, price, genre, Double.parseDouble(parts[6]), Integer.parseInt(parts[7])));
+                }
+            }
+        } catch (Exception e) {
+            System.out.println("Помилка завантаження даних.");
+        }
+        return list;
+    }
+
+    // МЕНЮ СТВОРЕННЯ (Лабораторна №8)
 
     private static void showCreateMenu(Scanner sc, List<Book> list) {
-        System.out.println("\nТип: 1-Book, 2-EBook, 3-PaperBook, 4-AudioBook, 5-RareBook, 0-Назад");
-        String type = sc.nextLine();
-        if (type.equals("0")) return;
+        System.out.println("\nОберіть тип: 1.Book, 2.EBook, 3.PaperBook, 4.AudioBook, 5.RareBook, 0.Назад");
+        String typeChoice = sc.nextLine();
+        if (typeChoice.equals("0")) return;
 
         try {
             System.out.print("Назва: "); String t = sc.nextLine();
@@ -130,65 +196,21 @@ public class MainClass {
             System.out.print("Рік: "); int y = Integer.parseInt(sc.nextLine());
             System.out.print("Ціна: "); double p = Double.parseDouble(sc.nextLine());
             System.out.println("Жанр: 1-FICTION, 2-FANTASY, 3-HISTORY, 4-CLASSIC");
-            String gc = sc.nextLine();
-            Genre g = (gc.equals("2")) ? Genre.FANTASY : (gc.equals("3")) ? Genre.HISTORY : (gc.equals("4")) ? Genre.CLASSIC : Genre.FICTION;
+            String gChoice = sc.nextLine();
+            Genre g = (gChoice.equals("2")) ? Genre.FANTASY : (gChoice.equals("3")) ? Genre.HISTORY : (gChoice.equals("4")) ? Genre.CLASSIC : Genre.FICTION;
 
-            switch (type) {
+            switch (typeChoice) {
                 case "1" -> list.add(new Book(t, a, y, p, g));
-                case "2" -> { System.out.print("Size(MB): "); list.add(new EBook(t, a, y, p, g, Double.parseDouble(sc.nextLine()))); }
-                case "3" -> { System.out.print("Weight(g): "); list.add(new PaperBook(t, a, y, p, g, Double.parseDouble(sc.nextLine()))); }
-                case "4" -> { System.out.print("Duration(min): "); list.add(new AudioBook(t, a, y, p, g, Integer.parseInt(sc.nextLine()))); }
+                case "2" -> { System.out.print("Розмір (MB): "); list.add(new EBook(t, a, y, p, g, Double.parseDouble(sc.nextLine()))); }
+                case "3" -> { System.out.print("Вага (г): "); list.add(new PaperBook(t, a, y, p, g, Double.parseDouble(sc.nextLine()))); }
+                case "4" -> { System.out.print("Тривалість (хв): "); list.add(new AudioBook(t, a, y, p, g, Integer.parseInt(sc.nextLine()))); }
                 case "5" -> {
-                    System.out.print("Weight(g): "); double w = Double.parseDouble(sc.nextLine());
-                    System.out.print("Condition(1-10): "); int c = Integer.parseInt(sc.nextLine());
+                    System.out.print("Вага (г): "); double w = Double.parseDouble(sc.nextLine());
+                    System.out.print("Стан (1-10): "); int c = Integer.parseInt(sc.nextLine());
                     list.add(new RareBook(t, a, y, p, g, w, c));
                 }
             }
-            System.out.println("Об'єкт додано!");
+            System.out.println("Додано!");
         } catch (Exception e) { System.out.println("Помилка: " + e.getMessage()); }
-    }
-
-    // ФАЙЛОВІ ОПЕРАЦІЇ Лаб 9
-
-    private static void saveToFile(List<Book> list) {
-        try (PrintWriter writer = new PrintWriter(new FileWriter(FILE_NAME))) {
-            for (Book b : list) {
-                StringBuilder sb = new StringBuilder();
-                sb.append(b.getClass().getSimpleName()).append(";")
-                        .append(b.getTitle()).append(";")
-                        .append(b.getAuthor()).append(";")
-                        .append(b.getYear()).append(";")
-                        .append(b.getPrice()).append(";")
-                        .append(b.getGenre());
-                if (b instanceof EBook) sb.append(";").append(((EBook) b).getFileSize());
-                else if (b instanceof AudioBook) sb.append(";").append(((AudioBook) b).getDuration());
-                else if (b instanceof RareBook) sb.append(";").append(((RareBook) b).getWeight()).append(";").append(((RareBook) b).getCondition());
-                else if (b instanceof PaperBook) sb.append(";").append(((PaperBook) b).getWeight());
-                writer.println(sb.toString());
-            }
-        } catch (IOException e) { System.out.println("Помилка запису."); }
-    }
-
-    private static List<Book> loadFromFile() {
-        List<Book> list = new ArrayList<>();
-        File file = new File(FILE_NAME);
-        if (!file.exists()) return list;
-        try (BufferedReader br = new BufferedReader(new FileReader(file))) {
-            String line;
-            while ((line = br.readLine()) != null) {
-                String[] p = line.split(";");
-                String type = p[0]; String title = p[1]; String author = p[2];
-                int year = Integer.parseInt(p[3]); double price = Double.parseDouble(p[4]);
-                Genre genre = Genre.valueOf(p[5]);
-                switch (type) {
-                    case "Book" -> list.add(new Book(title, author, year, price, genre));
-                    case "EBook" -> list.add(new EBook(title, author, year, price, genre, Double.parseDouble(p[6])));
-                    case "AudioBook" -> list.add(new AudioBook(title, author, year, price, genre, Integer.parseInt(p[6])));
-                    case "PaperBook" -> list.add(new PaperBook(title, author, year, price, genre, Double.parseDouble(p[6])));
-                    case "RareBook" -> list.add(new RareBook(title, author, year, price, genre, Double.parseDouble(p[6]), Integer.parseInt(p[7])));
-                }
-            }
-        } catch (Exception e) { System.out.println("Помилка завантаження файлу."); }
-        return list;
     }
 }
