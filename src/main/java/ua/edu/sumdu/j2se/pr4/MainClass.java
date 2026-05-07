@@ -1,61 +1,61 @@
 package ua.edu.sumdu.j2se.pr4;
 
+import java.util.ArrayList;
+import java.util.List;
 import java.util.Scanner;
 
 public class MainClass {
     public static void main(String[] args) {
         Scanner scanner = new Scanner(System.in);
-        // Створюємо об'єкт нашої бібліотеки
-        Library myLibrary = new Library("Моя Бібліотека");
+
+        // Поліморфна колекція: список типу Book може містити і EBook, і PaperBook
+        List<Book> inventory = new ArrayList<>();
 
         while (true) {
-            System.out.println("\nМЕНЮ");
-            System.out.println("1. Додати нову книгу");
-            System.out.println("2. Показати всі книги");
-            System.out.println("3. Вихід");
-            System.out.print("Оберіть дію: ");
+            System.out.println("\nУПРАВЛІННЯ КНИГАМИ");
+            System.out.println("1. Додати електронну книгу (E-Book)");
+            System.out.println("2. Додати паперову книгу (Paper Book)");
+            System.out.println("3. Вивести весь список");
+            System.out.println("4. Вихід");
+            System.out.print("Обери пункт: ");
 
             String choice = scanner.nextLine();
+            if (choice.equals("4")) break;
 
-            if (choice.equals("1")) {
-                try {
-                    // Збираємо дані від користувача
-                    System.out.print("Назва: ");
-                    String title = scanner.nextLine();
-                    System.out.print("Автор: ");
-                    String author = scanner.nextLine();
-                    System.out.print("Рік: ");
-                    int year = Integer.parseInt(scanner.nextLine());
-                    System.out.print("Ціна: ");
-                    double price = Double.parseDouble(scanner.nextLine());
+            try {
+                if (choice.equals("1") || choice.equals("2")) {
+                    // Спільні дані для обох типів
+                    System.out.print("Назва: "); String title = scanner.nextLine();
+                    System.out.print("Автор: "); String author = scanner.nextLine();
+                    System.out.print("Рік: "); int year = Integer.parseInt(scanner.nextLine());
+                    System.out.print("Ціна: "); double price = Double.parseDouble(scanner.nextLine());
 
-                    // Вибір жанру через меню
-                    System.out.println("Оберіть жанр: 1-CLASSIC, 2-FANTASY, 3-HISTORY");
-                    String gChoice = scanner.nextLine();
-                    Genre genre = Genre.CLASSIC; // За замовчуванням
-                    if (gChoice.equals("2")) genre = Genre.FANTASY;
-                    if (gChoice.equals("3")) genre = Genre.HISTORY;
+                    if (choice.equals("1")) {
+                        System.out.print("Розмір файлу (MB): ");
+                        double size = Double.parseDouble(scanner.nextLine());
+                        // Додаємо Електронну книгу
+                        inventory.add(new EBook(title, author, year, price, Genre.FICTION, size));
+                    } else {
+                        System.out.print("Вага книги (г): ");
+                        double weight = Double.parseDouble(scanner.nextLine());
+                        // Додаємо Паперову книгу
+                        inventory.add(new PaperBook(title, author, year, price, Genre.CLASSIC, weight));
+                    }
+                    System.out.println("Книгу успішно додано!");
 
-                    // Створюємо книгу і кладемо її в бібліотеку
-                    Book b = new Book(title, author, year, price, genre);
-                    myLibrary.addBook(b);
-
-                    System.out.println("Книгу додано!");
-                    // Перевірка статичного лічильника
-                    System.out.println("Загалом книг у базі: " + Book.getBookCount());
-
-                } catch (Exception e) {
-                    System.out.println("Помилка при введенні: " + e.getMessage());
+                } else if (choice.equals("3")) {
+                    System.out.println("\nВМІСТ БІБЛІОТЕКИ");
+                    if (inventory.isEmpty()) {
+                        System.out.println("Список порожній.");
+                    }
+                    // ДЕМОНСТРАЦІЯ ПОЛІМОРФІЗМУ
+                    for (Book b : inventory) {
+                        // Хоча b має тип Book, Java викличе toString() нащадка (EBook або PaperBook)
+                        System.out.println(b);
+                    }
                 }
-
-            } else if (choice.equals("2")) {
-                // Викликаємо метод нашої бібліотеки
-                myLibrary.showLibraryInfo();
-            } else if (choice.equals("3")) {
-                System.out.println("Кінець роботи.");
-                break;
-            } else {
-                System.out.println("Немає такого пункту.");
+            } catch (Exception e) {
+                System.out.println("Помилка: введіть коректні дані! (" + e.getMessage() + ")");
             }
         }
     }
