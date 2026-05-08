@@ -6,12 +6,15 @@ import java.util.Objects;
  * Базовий клас Книга.
  * Тепер він слугує основою для різних типів книг (електронних та паперових).
  */
-public class Book {
+    public class Book {
     private String title;
     private String author;
     private int year;
     private double price;
     private Genre genre;
+    private int quantity = 1;
+    public int getQuantity() { return quantity; }
+    public void setQuantity(int quantity) { this.quantity = quantity; }
 
     // Конструктор тепер просто створює книгу без лічильників
     public Book(String title, String author, int year, double price, Genre genre) {
