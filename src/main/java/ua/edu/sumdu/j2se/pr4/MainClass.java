@@ -4,14 +4,22 @@ import java.util.Scanner;
 
 public class MainClass {
     public static void main(String[] args) {
+        // 1. Перевірка наявності аргументу (шлях до db.properties)
+        if (args.length == 0) {
+            System.out.println("Помилка: вкажіть шлях до файлу конфігурації БД (наприклад, db.properties) в аргументах!");
+            return;
+        }
+
         Scanner scanner = new Scanner(System.in);
-        // Створюємо об'єкт Library, який сам завантажить дані з файлу
+
+        // 2. Ініціалізація Library та DatabaseManager
         Library library = new Library();
+        DatabaseManager dbManager = new DatabaseManager(args[0]);
 
         while (true) {
-            System.out.println("\nГОЛОВНЕ МЕНЮ");
+            System.out.println("\nГОЛОВНЕ МЕНЮ (JDBC Mode)");
             System.out.println("1. Пошук об'єкта");
-            System.out.println("2. Додати нову книгу (з кількістю)");
+            System.out.println("2. Додати нову книгу (збереження в БД)");
             System.out.println("3. Вивести весь фонд бібліотеки");
             System.out.println("4. Завершити роботу");
             System.out.print("Вибір: ");
@@ -20,18 +28,17 @@ public class MainClass {
 
             if (mainChoice.equals("4")) {
                 library.saveToFile();
-                System.out.println("Дані збережено. До побачення!");
+                System.out.println("Дані збережено у файл. До побачення!");
                 break;
             }
 
             switch (mainChoice) {
                 case "1" -> showSearchMenu(scanner, library);
-                case "2" -> showCreateMenu(scanner, library);
+                case "2" -> showCreateMenu(scanner, library, dbManager); // Передаємо dbManager
                 case "3" -> {
                     System.out.println("\n ФОНД БІБЛІОТЕКИ");
                     if (library.getBooks().isEmpty()) System.out.println("Бібліотека порожня.");
                     for (Book b : library.getBooks()) {
-                        // Виводимо книгу та її кількість
                         System.out.println(b + " | Кількість: " + b.getQuantity());
                     }
                 }
@@ -58,7 +65,8 @@ public class MainClass {
         } catch (Exception e) { System.out.println("Помилка введення."); }
     }
 
-    private static void showCreateMenu(Scanner sc, Library lib) {
+    // Додали DatabaseManager у параметри
+    private static void showCreateMenu(Scanner sc, Library lib, DatabaseManager db) {
         System.out.println("\nОберіть тип: 1.Book, 2.EBook, 3.PaperBook, 4.AudioBook, 5.RareBook, 0.Назад");
         String typeChoice = sc.nextLine();
         if (typeChoice.equals("0")) return;
@@ -69,7 +77,6 @@ public class MainClass {
             System.out.print("Рік: "); int y = Integer.parseInt(sc.nextLine());
             System.out.print("Ціна: "); double p = Double.parseDouble(sc.nextLine());
             System.out.print("Кількість примірників: "); int q = Integer.parseInt(sc.nextLine());
-
             System.out.println("Жанр: 1-FICTION, 2-FANTASY, 3-HISTORY, 4-CLASSIC");
             String gChoice = sc.nextLine();
             Genre g = (gChoice.equals("2")) ? Genre.FANTASY : (gChoice.equals("3")) ? Genre.HISTORY : (gChoice.equals("4")) ? Genre.CLASSIC : Genre.FICTION;
@@ -87,8 +94,10 @@ public class MainClass {
                 }
             }
             if (newBook != null) {
-                lib.addNewBook(newBook, q); // Викликаємо метод агрегатора
-                System.out.println("Об'єкт опрацьовано бібліотекою!");
+                lib.addNewBook(newBook, q);
+                // 3. ЗБЕРЕЖЕННЯ В БАЗУ ДАНИХ (JDBC)
+                db.insertBook(newBook);
+                System.out.println("Об'єкт додано локально та збережено в БД!");
             }
         } catch (Exception e) { System.out.println("Помилка: " + e.getMessage()); }
     }
