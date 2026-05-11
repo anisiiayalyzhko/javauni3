@@ -1,22 +1,20 @@
 package ua.edu.sumdu.j2se.pr4;
 
+import java.io.Serializable;
 import java.util.Objects;
 
 /**
- * Базовий клас Книга.
- * Тепер він слугує основою для різних типів книг (електронних та паперових).
+ * Базовий абстрактний клас Книга.
+ * Реалізує Comparable для сортування за назвою.
  */
-    public class Book {
+public abstract class Book implements Serializable, Comparable<Book> {
     private String title;
     private String author;
     private int year;
     private double price;
     private Genre genre;
     private int quantity = 1;
-    public int getQuantity() { return quantity; }
-    public void setQuantity(int quantity) { this.quantity = quantity; }
 
-    // Конструктор тепер просто створює книгу без лічильників
     public Book(String title, String author, int year, double price, Genre genre) {
         setTitle(title);
         setAuthor(author);
@@ -25,7 +23,17 @@ import java.util.Objects;
         setGenre(genre);
     }
 
-    // ГЕТЕРИ ТА СЕТЕРИ (залишаємо для нащадків)
+    // РЕАЛІЗАЦІЯ COMPARABLE
+    // Сортування за назвою книги (алфавітний порядок)
+    @Override
+    public int compareTo(Book other) {
+        if (other == null) return 1;
+        return this.title.compareToIgnoreCase(other.getTitle());
+    }
+
+    // ГЕТТЕРИ ТА СЕТТЕРИ
+    public int getQuantity() { return quantity; }
+    public void setQuantity(int quantity) { this.quantity = quantity; }
 
     public String getTitle() { return title; }
     public void setTitle(String title) {
@@ -60,16 +68,12 @@ import java.util.Objects;
     }
 
     public Genre getGenre() { return genre; }
-    public void setGenre(Genre genre) {
-        this.genre = genre;
-    }
-
-    // СЛУЖБОВІ МЕТОДИ
+    public void setGenre(Genre genre) { this.genre = genre; }
 
     @Override
     public String toString() {
-        return String.format("Книга: '%s', Автор: %s, Рік: %d, Ціна: %.2f, Жанр: %s",
-                title, author, year, price, genre);
+        return String.format("[%s] '%s', Автор: %s, Рік: %d, Ціна: %.2f, Жанр: %s",
+                getClass().getSimpleName(), title, author, year, price, genre);
     }
 
     @Override
@@ -77,15 +81,12 @@ import java.util.Objects;
         if (this == o) return true;
         if (o == null || getClass() != o.getClass()) return false;
         Book book = (Book) o;
-        return year == book.year &&
-                Double.compare(book.price, price) == 0 &&
-                Objects.equals(title, book.title) &&
-                Objects.equals(author, book.author) &&
-                genre == book.genre;
+        return year == book.year && Double.compare(book.price, price) == 0 &&
+                Objects.equals(title, book.title) && Objects.equals(author, book.author);
     }
 
     @Override
     public int hashCode() {
-        return Objects.hash(title, author, year, price, genre);
+        return Objects.hash(title, author, year, price);
     }
 }

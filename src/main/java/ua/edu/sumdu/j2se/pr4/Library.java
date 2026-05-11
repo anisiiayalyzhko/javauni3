@@ -9,29 +9,31 @@ public class Library {
     private static final String FILE_NAME = "input.txt";
 
     public Library() {
-        // При створенні бібліотеки вона сама завантажує себе з файлу
         this.books = loadFromFile();
     }
 
-    // ГОЛОВНИЙ МЕТОД ЗАВДАННЯ: Додавання з урахуванням кількості
+    /**
+     * Додавання нової книги до фонду.
+     * Якщо книга з такими ж параметрами вже існує, оновлюється її кількість.
+     */
     public void addNewBook(Book bk, int quantity) {
         for (Book existingBook : books) {
             if (existingBook.equals(bk)) {
                 existingBook.setQuantity(existingBook.getQuantity() + quantity);
-                System.out.println("Така книга вже є. Кількість оновлено!");
+                System.out.println("Інформацію про кількість примірників оновлено.");
                 return;
             }
         }
         bk.setQuantity(quantity);
         books.add(bk);
-        System.out.println("Нову книгу додано до фонду.");
+        System.out.println("Новий об'єкт успішно додано до фонду.");
     }
 
     public List<Book> getBooks() {
         return books;
     }
 
-    // МЕТОДИ ПОШУКУ (Перенесені сюди для агрегації)
+    // МЕТОДИ ПОШУКУ
     public List<Book> searchByAuthor(String author) {
         List<Book> found = new ArrayList<>();
         for (Book b : books) {
@@ -43,7 +45,7 @@ public class Library {
     public List<Book> searchByYear(int year) {
         List<Book> found = new ArrayList<>();
         for (Book b : books) {
-            if (b.getYear() >= year) found.add(b);
+            if (b.getYear() == year) found.add(b);
         }
         return found;
     }
@@ -67,7 +69,7 @@ public class Library {
                         .append(b.getYear()).append(";")
                         .append(b.getPrice()).append(";")
                         .append(b.getGenre()).append(";")
-                        .append(b.getQuantity()); // Зберігаємо кількість!
+                        .append(b.getQuantity());
 
                 if (b instanceof EBook) sb.append(";").append(((EBook) b).getFileSize());
                 else if (b instanceof AudioBook) sb.append(";").append(((AudioBook) b).getDuration());
@@ -79,7 +81,7 @@ public class Library {
                 writer.println(sb.toString());
             }
         } catch (IOException e) {
-            System.out.println("Помилка запису: " + e.getMessage());
+            System.out.println("Помилка при збереженні даних: " + e.getMessage());
         }
     }
 
@@ -103,20 +105,21 @@ public class Library {
                 int qty = Integer.parseInt(p[6]);
 
                 Book b = null;
+                // Зверніть увагу: створення об'єкта "Book" видалено, бо він став абстрактним
                 switch (type) {
-                    case "Book" -> b = new Book(title, author, year, price, genre);
                     case "EBook" -> b = new EBook(title, author, year, price, genre, Double.parseDouble(p[7]));
                     case "AudioBook" -> b = new AudioBook(title, author, year, price, genre, Integer.parseInt(p[7]));
                     case "PaperBook" -> b = new PaperBook(title, author, year, price, genre, Double.parseDouble(p[7]));
                     case "RareBook" -> b = new RareBook(title, author, year, price, genre, Double.parseDouble(p[7]), Integer.parseInt(p[8]));
                 }
+
                 if (b != null) {
                     b.setQuantity(qty);
                     list.add(b);
                 }
             }
         } catch (Exception e) {
-            System.out.println("Помилка завантаження: " + e.getMessage());
+            System.out.println("Помилка при завантаженні бази даних: " + e.getMessage());
         }
         return list;
     }
