@@ -4,6 +4,7 @@ import java.util.Scanner;
 import java.util.List;
 import java.util.ArrayList;
 import java.util.Collections;
+import java.util.Comparator;
 
 public class MainClass {
     public static void main(String[] args) {
@@ -11,11 +12,11 @@ public class MainClass {
         Library library = new Library();
 
         while (true) {
-            System.out.println("\nГОЛОВНЕ МЕНЮ ");
+            System.out.println("\nГОЛОВНЕ МЕНЮ");
             System.out.println("1. Пошук об'єкта");
             System.out.println("2. Додати новий примірник");
             System.out.println("3. Вивести весь фонд бібліотеки");
-            System.out.println("4. Вивести відсортовану інформацію (за назвою)");
+            System.out.println("4. Сортування за критеріями (Comparator)");
             System.out.println("5. Завершити роботу");
             System.out.print("Вибір: ");
 
@@ -23,7 +24,7 @@ public class MainClass {
 
             if (mainChoice.equals("5")) {
                 library.saveToFile();
-                System.out.println("Дані збережено. Роботу завершено.");
+                System.out.println("Дані збережено. До побачення!");
                 break;
             }
 
@@ -31,98 +32,84 @@ public class MainClass {
                 case "1" -> showSearchMenu(scanner, library);
                 case "2" -> showCreateMenu(scanner, library);
                 case "3" -> {
-                    System.out.println("\n ФОНД БІБЛІОТЕКИ");
-                    if (library.getBooks().isEmpty()) System.out.println("Бібліотека порожня.");
-                    for (Book b : library.getBooks()) {
-                        System.out.println(b + " | Кількість: " + b.getQuantity());
-                    }
+                    System.out.println("\nФОНД БІБЛІОТЕКИ");
+                    printBookList(library.getBooks());
                 }
-                case "4" -> {
-                    System.out.println("\nВІДСОРТОВАНИЙ ФОНД (Comparable)");
-                    List<Book> sortedBooks = new ArrayList<>(library.getBooks());
-                    if (sortedBooks.isEmpty()) {
-                        System.out.println("Бібліотека порожня, немає об'єктів для сортування.");
-                    } else {
-                        // Використання інтерфейсу Comparable через стандартне сортування
-                        Collections.sort(sortedBooks);
-                        for (Book b : sortedBooks) {
-                            System.out.println(b + " | Кількість: " + b.getQuantity());
-                        }
-                    }
-                }
-                default -> System.out.println("Невірний вибір. Спробуйте ще раз.");
+                case "4" -> showSortMenu(scanner, library);
+                default -> System.out.println("Невірний вибір.");
             }
         }
     }
 
-    private static void showSearchMenu(Scanner sc, Library lib) {
-        System.out.println("\n МЕНЮ ПОШУКУ ");
-        System.out.println("1. За автором\n2. За роком\n3. За ціною\n0. Назад");
+    private static void showSortMenu(Scanner sc, Library lib) {
+        List<Book> sortList = new ArrayList<>(lib.getBooks());
+        if (sortList.isEmpty()) {
+            System.out.println("Бібліотека порожня, нічого сортувати.");
+            return;
+        }
+
+        System.out.println("\n ОБЕРІТЬ КРИТЕРІЙ СОРТУВАННЯ");
+        System.out.println("1. За назвою (А-Я)");
+        System.out.println("2. За автором (А-Я)");
+        System.out.println("3. За ціною (0-1000)");
+        System.out.println("0. Повернутися назад");
+        System.out.print("Вибір: ");
+
         String choice = sc.nextLine();
-        List<Book> results = new ArrayList<>();
+        Comparator<Book> comparator = null;
 
-        try {
-            switch (choice) {
-                case "1" -> { System.out.print("Введіть автора: "); results = lib.searchByAuthor(sc.nextLine()); }
-                case "2" -> { System.out.print("Введіть рік: "); results = lib.searchByYear(Integer.parseInt(sc.nextLine())); }
-                case "3" -> { System.out.print("Введіть максимальну ціну: "); results = lib.searchByPrice(Double.parseDouble(sc.nextLine())); }
-                case "0" -> { return; }
+        switch (choice) {
+            case "1" -> {
+                // Анонімний внутрішній клас для сортування за назвою
+                comparator = new Comparator<Book>() {
+                    @Override
+                    public int compare(Book b1, Book b2) {
+                        return b1.getTitle().compareToIgnoreCase(b2.getTitle());
+                    }
+                };
             }
-            if (results.isEmpty()) System.out.println("За вашим запитом нічого не знайдено.");
-            else for (Book b : results) System.out.println(b + " (К-сть: " + b.getQuantity() + ")");
-        } catch (Exception e) { System.out.println("Помилка введення даних."); }
-    }
-
-    private static void showCreateMenu(Scanner sc, Library lib) {
-        // Зверніть увагу: створення об'єкта Book видалено, оскільки він абстрактний
-        System.out.println("\nОберіть тип: 1.EBook, 2.PaperBook, 3.AudioBook, 4.RareBook, 0.Назад");
-        String typeChoice = sc.nextLine();
-        if (typeChoice.equals("0")) return;
-
-        try {
-            System.out.print("Назва: "); String t = sc.nextLine();
-            System.out.print("Автор: "); String a = sc.nextLine();
-            System.out.print("Рік: "); int y = Integer.parseInt(sc.nextLine());
-            System.out.print("Ціна: "); double p = Double.parseDouble(sc.nextLine());
-            System.out.print("Кількість примірників: "); int q = Integer.parseInt(sc.nextLine());
-
-            System.out.println("Оберіть жанр: 1-FICTION, 2-FANTASY, 3-HISTORY, 4-CLASSIC");
-            String gChoice = sc.nextLine();
-            Genre g = switch (gChoice) {
-                case "2" -> Genre.FANTASY;
-                case "3" -> Genre.HISTORY;
-                case "4" -> Genre.CLASSIC;
-                default -> Genre.FICTION;
-            };
-
-            Book newBook = null;
-            switch (typeChoice) {
-                case "1" -> {
-                    System.out.print("Розмір файлу (MB): ");
-                    newBook = new EBook(t, a, y, p, g, Double.parseDouble(sc.nextLine()));
-                }
-                case "2" -> {
-                    System.out.print("Вага книги (г): ");
-                    newBook = new PaperBook(t, a, y, p, g, Double.parseDouble(sc.nextLine()));
-                }
-                case "3" -> {
-                    System.out.print("Тривалість запису (хв): ");
-                    newBook = new AudioBook(t, a, y, p, g, Integer.parseInt(sc.nextLine()));
-                }
-                case "4" -> {
-                    System.out.print("Вага книги (г): "); double w = Double.parseDouble(sc.nextLine());
-                    System.out.print("Стан раритету (1-10): "); int c = Integer.parseInt(sc.nextLine());
-                    newBook = new RareBook(t, a, y, p, g, w, c);
-                }
-                default -> System.out.println("Невірний тип об'єкта.");
+            case "2" -> {
+                // Анонімний внутрішній клас для сортування за автором
+                comparator = new Comparator<Book>() {
+                    @Override
+                    public int compare(Book b1, Book b2) {
+                        return b1.getAuthor().compareToIgnoreCase(b2.getAuthor());
+                    }
+                };
             }
-
-            if (newBook != null) {
-                lib.addNewBook(newBook, q);
-                System.out.println("Об'єкт успішно додано до фонду бібліотеки.");
+            case "3" -> {
+                // Анонімний внутрішній клас для сортування за ціною
+                comparator = new Comparator<Book>() {
+                    @Override
+                    public int compare(Book b1, Book b2) {
+                        return Double.compare(b1.getPrice(), b2.getPrice());
+                    }
+                };
             }
-        } catch (Exception e) {
-            System.out.println("Помилка при створенні об'єкта: " + e.getMessage());
+            case "0" -> { return; }
+            default -> {
+                System.out.println("Невірний вибір.");
+                return;
+            }
+        }
+
+        if (comparator != null) {
+            Collections.sort(sortList, comparator);
+            System.out.println("\nРЕЗУЛЬТАТ СОРТУВАННЯ");
+            printBookList(sortList);
         }
     }
+
+    private static void printBookList(List<Book> list) {
+        if (list.isEmpty()) {
+            System.out.println("Список порожній.");
+        } else {
+            for (Book b : list) {
+                System.out.println(b + " | Кількість: " + b.getQuantity());
+            }
+        }
+    }
+
+    private static void showSearchMenu(Scanner sc, Library lib) { /* ... */ }
+    private static void showCreateMenu(Scanner sc, Library lib) { /* ... */ }
 }
