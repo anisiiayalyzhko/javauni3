@@ -2,12 +2,14 @@ package ua.edu.sumdu.j2se.pr4;
 
 import java.io.Serializable;
 import java.util.Objects;
+import java.util.UUID;
 
 /**
  * Базовий абстрактний клас Книга.
- * Реалізує Comparable для сортування за назвою.
+ * Реалізує Comparable (ЛР13), Identifiable (ЛР16).
  */
-public abstract class Book implements Serializable, Comparable<Book> {
+public abstract class Book implements Serializable, Comparable<Book>, Identifiable {
+    private final UUID uuid; // Унікальний ідентифікатор (ЛР16)
     private String title;
     private String author;
     private int year;
@@ -16,6 +18,9 @@ public abstract class Book implements Serializable, Comparable<Book> {
     private int quantity = 1;
 
     public Book(String title, String author, int year, double price, Genre genre) {
+        // Автоматична генерація UUID при створенні об'єкта
+        this.uuid = UUID.randomUUID();
+
         setTitle(title);
         setAuthor(author);
         setYear(year);
@@ -23,8 +28,13 @@ public abstract class Book implements Serializable, Comparable<Book> {
         setGenre(genre);
     }
 
-    // РЕАЛІЗАЦІЯ COMPARABLE
-    // Сортування за назвою книги (алфавітний порядок)
+    // Реалізація інтерфейсу Identifiable
+    @Override
+    public UUID getUuid() {
+        return uuid;
+    }
+
+    // Реалізація Comparable
     @Override
     public int compareTo(Book other) {
         if (other == null) return 1;
@@ -70,10 +80,23 @@ public abstract class Book implements Serializable, Comparable<Book> {
     public Genre getGenre() { return genre; }
     public void setGenre(Genre genre) { this.genre = genre; }
 
+    /**
+     * Оновлений toString для виводу короткого UUID (перші 8 символів)
+     */
     @Override
     public String toString() {
-        return String.format("[%s] '%s', Автор: %s, Рік: %d, Ціна: %.2f, Жанр: %s",
-                getClass().getSimpleName(), title, author, year, price, genre);
+        return String.format("[%s] ID:%s... '%s', Автор: %s, Ціна: %.2f",
+                getClass().getSimpleName(),
+                uuid.toString().substring(0, 8),
+                title, author, price);
+    }
+
+    /**
+     * Спеціальний метод для виводу ПОВНОЇ інформації в GUI
+     */
+    public String toFullString() {
+        return String.format("UUID: %s\nТип: %s\nНазва: %s\nАвтор: %s\nРік: %d\nЦіна: %.2f\nЖанр: %s\nКількість: %d",
+                uuid, getClass().getSimpleName(), title, author, year, price, genre, quantity);
     }
 
     @Override
@@ -81,12 +104,12 @@ public abstract class Book implements Serializable, Comparable<Book> {
         if (this == o) return true;
         if (o == null || getClass() != o.getClass()) return false;
         Book book = (Book) o;
-        return year == book.year && Double.compare(book.price, price) == 0 &&
-                Objects.equals(title, book.title) && Objects.equals(author, book.author);
+        // Тепер ми можемо порівнювати об'єкти суворо за UUID
+        return Objects.equals(uuid, book.uuid);
     }
 
     @Override
     public int hashCode() {
-        return Objects.hash(title, author, year, price);
+        return Objects.hash(uuid);
     }
 }
