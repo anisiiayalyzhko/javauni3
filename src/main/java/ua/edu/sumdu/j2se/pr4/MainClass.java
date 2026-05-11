@@ -16,7 +16,7 @@ public class MainClass {
             System.out.println("1. Пошук об'єкта");
             System.out.println("2. Додати новий примірник");
             System.out.println("3. Вивести весь фонд бібліотеки");
-            System.out.println("4. Сортування за критеріями (Comparator)");
+            System.out.println("4. Сортування за критеріями (Lambda)");
             System.out.println("5. Завершити роботу");
             System.out.print("Вибір: ");
 
@@ -32,7 +32,7 @@ public class MainClass {
                 case "1" -> showSearchMenu(scanner, library);
                 case "2" -> showCreateMenu(scanner, library);
                 case "3" -> {
-                    System.out.println("\nФОНД БІБЛІОТЕКИ");
+                    System.out.println("\n ФОНД БІБЛІОТЕКИ");
                     printBookList(library.getBooks());
                 }
                 case "4" -> showSortMenu(scanner, library);
@@ -48,44 +48,21 @@ public class MainClass {
             return;
         }
 
-        System.out.println("\n ОБЕРІТЬ КРИТЕРІЙ СОРТУВАННЯ");
+        System.out.println("\nОБЕРІТЬ КРИТЕРІЙ СОРТУВАННЯ (Лямбда-вирази)");
         System.out.println("1. За назвою (А-Я)");
         System.out.println("2. За автором (А-Я)");
-        System.out.println("3. За ціною (0-1000)");
+        System.out.println("3. За ціною (від найменшої)");
         System.out.println("0. Повернутися назад");
         System.out.print("Вибір: ");
 
         String choice = sc.nextLine();
         Comparator<Book> comparator = null;
 
+        // ЗАМІНА АНОНІМНИХ КЛАСІВ НА ЛЯМБДА-ВИРАЗИ
         switch (choice) {
-            case "1" -> {
-                // Анонімний внутрішній клас для сортування за назвою
-                comparator = new Comparator<Book>() {
-                    @Override
-                    public int compare(Book b1, Book b2) {
-                        return b1.getTitle().compareToIgnoreCase(b2.getTitle());
-                    }
-                };
-            }
-            case "2" -> {
-                // Анонімний внутрішній клас для сортування за автором
-                comparator = new Comparator<Book>() {
-                    @Override
-                    public int compare(Book b1, Book b2) {
-                        return b1.getAuthor().compareToIgnoreCase(b2.getAuthor());
-                    }
-                };
-            }
-            case "3" -> {
-                // Анонімний внутрішній клас для сортування за ціною
-                comparator = new Comparator<Book>() {
-                    @Override
-                    public int compare(Book b1, Book b2) {
-                        return Double.compare(b1.getPrice(), b2.getPrice());
-                    }
-                };
-            }
+            case "1" -> comparator = (b1, b2) -> b1.getTitle().compareToIgnoreCase(b2.getTitle());
+            case "2" -> comparator = (b1, b2) -> b1.getAuthor().compareToIgnoreCase(b2.getAuthor());
+            case "3" -> comparator = (b1, b2) -> Double.compare(b1.getPrice(), b2.getPrice());
             case "0" -> { return; }
             default -> {
                 System.out.println("Невірний вибір.");
@@ -94,8 +71,9 @@ public class MainClass {
         }
 
         if (comparator != null) {
+            // Сортування списку за допомогою переданої лямбди
             Collections.sort(sortList, comparator);
-            System.out.println("\nРЕЗУЛЬТАТ СОРТУВАННЯ");
+            System.out.println("\n--- РЕЗУЛЬТАТ СОРТУВАННЯ ---");
             printBookList(sortList);
         }
     }
@@ -110,6 +88,9 @@ public class MainClass {
         }
     }
 
-    private static void showSearchMenu(Scanner sc, Library lib) { /* ... */ }
-    private static void showCreateMenu(Scanner sc, Library lib) { /* ... */ }
+    private static void showSearchMenu(Scanner sc, Library lib) {
+    }
+
+    private static void showCreateMenu(Scanner sc, Library lib) {
+    }
 }
